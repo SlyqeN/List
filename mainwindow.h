@@ -83,12 +83,8 @@ private:
     QLineEdit *editCurator;     ///< Поле ввода куратора
     QLineEdit *editDebt;        ///< Поле ввода задолженности
     QLineEdit *editFaculty;     ///< Поле ввода факультета
-    QComboBox *editMonitor;     ///< Поле выбора курса
+    QComboBox *comboCourse;     ///< Поле выбора курса
 };
-
-
-QLineEdit *editGroup, *editSurname, *editName, *editPatronymic, *editScholarship, *editMonitor, *editCurator, *editDebt, *editFaculty;
-    QComboBox *comboCourse;
 
 // Главное окно приложения
 class MainWindow : public QMainWindow {
