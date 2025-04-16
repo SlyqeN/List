@@ -41,17 +41,52 @@ public:
     }
 };
 
-// Диалоговое окно для добавления студента
-class AddStudentDialog : public QDialog {
+/**
+ * @class AddStudentDialog
+ * @brief Диалоговое окно для ввода информации о студенте
+ *
+ * Класс AddStudentDialog предоставляет форму, позволяющую пользователю
+ * ввести данные нового студента: группу, фамилию, имя и отчество.
+ * После подтверждения, данные могут быть получены в виде QStringList
+ * для дальнейшей обработки в основном окне приложения.
+ *
+ * @note Класс используется только для ввода данных и не взаимодействует с базой данных напрямую.
+ */
+class AddStudentDialog : public QDialog
+{
     Q_OBJECT
+
 public:
+    /**
+     * @brief Конструктор по умолчанию
+     * @param parent Родительский виджет
+     *
+     * Инициализирует элементы формы и размещает их на диалоге.
+     */
     explicit AddStudentDialog(QWidget *parent = nullptr);
+
+    /**
+     * @brief Получение введённых данных
+     * @return QStringList, содержащий [группа, фамилия, имя, отчество,]
+     *
+     * Используется для получения информации, введённой пользователем.
+     */
     QStringList getData() const;
 
 private:
-    QLineEdit *editGroup, *editSurname, *editName, *editPatronymic, *editScholarship, *editMonitor, *editCurator, *editDebt, *editFaculty;
-    QComboBox *comboCourse;
+    QLineEdit *editGroup;       ///< Поле ввода группы
+    QLineEdit *editSurname;     ///< Поле ввода фамилии
+    QLineEdit *editName;        ///< Поле ввода имени
+    QLineEdit *editPatronymic;  ///< Поле ввода отчества
+    QLineEdit *editScholarship; ///< Поле ввода стипендии
+    QLineEdit *editMonitor;     ///< Поле ввода старосты
+    QLineEdit *editCurator;     ///< Поле ввода куратора
+    QLineEdit *editDebt;        ///< Поле ввода задолженности
+    QLineEdit *editFaculty;     ///< Поле ввода факультета
+    QComboBox *comboCourse;     ///< Поле выбора курса
 };
+
+
 
 // Главное окно приложения
 class MainWindow : public QMainWindow {
