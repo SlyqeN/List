@@ -3,33 +3,37 @@
 
 #include <QDialog>
 #include <QTableWidget>
+#include <QComboBox>
+#include <QPushButton>
 #include <QtCharts/QChartView>
 #include <QtCharts/QPieSeries>
 #include <QtCharts/QBarSeries>
 #include <QtCharts/QBarSet>
 #include <QtCharts/QBarCategoryAxis>
 #include <QtCharts/QValueAxis>
-#include <QtCharts>
 
-using namespace QtCharts;
-
+QT_CHARTS_USE_NAMESPACE
 
 class ChartWindow : public QDialog {
     Q_OBJECT
+
 public:
     explicit ChartWindow(QWidget *parent = nullptr);
     void setData(QTableWidget *table);
 
+private slots:
+    void updateChart();  // Обработчик кнопки "Показать"
+
 private:
     QTableWidget *dataTable;
 
-    QChartView *chartViewPieCourse;
-    QChartView *chartViewPieThird;
-    QChartView *chartViewBarScholarship;
+    QChartView *chartView;
+    QComboBox *comboBoxChartType;
+    QPushButton *btnShowChart;
 
-    void createPieChartCourseDistribution();
-    void createPieChartThirdCoursePercentage();
-    void createBarChartScholarship();
+    QChart* createPieChartCourseDistribution();
+    QChart* createPieChartThirdCoursePercentage();
+    QChart* createBarChartScholarship();
 };
 
 #endif // CHARTWINDOW_H

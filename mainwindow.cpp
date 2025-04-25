@@ -4,16 +4,16 @@
 #include <QMessageBox>
 #include <QHeaderView>
 #include <QTextStream>
-#include "queryresults.h" // Подключаем реализацию запросов
-#include "chartwindow.h"  // Подключаем реализацию диаграмм
+#include <QRegularExpression>
+#include "queryresults.h"
+#include "chartwindow.h"
 
-// Конструктор диалога добавления студента
 AddStudentDialog::AddStudentDialog(QWidget *parent) : QDialog(parent) {
     QFormLayout *layout = new QFormLayout(this);
 
     editGroup = new QLineEdit(this);
     comboCourse = new QComboBox(this);
-    for (int i = 1; i <= 6; ++i) {  // Курсы 1-6
+    for (int i = 1; i <= 6; ++i) {
         comboCourse->addItem(QString::number(i));
     }
     editSurname = new QLineEdit(this);
@@ -22,7 +22,12 @@ AddStudentDialog::AddStudentDialog(QWidget *parent) : QDialog(parent) {
     editScholarship = new QLineEdit(this);
     editMonitor = new QLineEdit(this);
     editCurator = new QLineEdit(this);
-    editDebt = new QLineEdit(this);
+
+    comboDebt = new QComboBox(this);
+    comboDebt->addItems({"Нет", "Да"});
+    connect(comboDebt, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &AddStudentDialog::onDebtChanged);
+
     editFaculty = new QLineEdit(this);
 
     layout->addRow("Группа:", editGroup);
@@ -33,7 +38,7 @@ AddStudentDialog::AddStudentDialog(QWidget *parent) : QDialog(parent) {
     layout->addRow("Стипендия:", editScholarship);
     layout->addRow("Староста:", editMonitor);
     layout->addRow("Куратор:", editCurator);
-    layout->addRow("Задолженность:", editDebt);
+    layout->addRow("Задолженность:", comboDebt);
     layout->addRow("Факультет:", editFaculty);
 
     QPushButton *btnOk = new QPushButton("Добавить", this);
@@ -41,7 +46,17 @@ AddStudentDialog::AddStudentDialog(QWidget *parent) : QDialog(parent) {
     layout->addRow(btnOk);
 }
 
-// Получение данных из диалога добавления студента
+void AddStudentDialog::onDebtChanged(int index) {
+    if (index == 1) {
+        editScholarship->setText("0");
+        editScholarship->setEnabled(false);
+    } else {
+        editScholarship->setEnabled(true);
+    }
+}
+
+
+
 QStringList AddStudentDialog::getData() const {
     return {
         editGroup->text(),
@@ -52,25 +67,22 @@ QStringList AddStudentDialog::getData() const {
         editScholarship->text(),
         editMonitor->text(),
         editCurator->text(),
-        editDebt->text(),
+        comboDebt->currentText(),
         editFaculty->text()
     };
 }
 
-// Конструктор главного окна
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
-    // Настройка таблицы
     QStringList headers = {"Группа", "Курс •", "Фамилия", "Имя", "Отчество",
-                           "Стипендия", "Староста", "Куратор", "Задолженность", "Факультет"};
+                         "Стипендия", "Староста", "Куратор", "Задолженность", "Факультет"};
     ui->tableWidget->setColumnCount(headers.size());
     ui->tableWidget->setHorizontalHeaderLabels(headers);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->tableWidget->setSortingEnabled(true);
 
-    // Подключение сигналов
     connect(ui->tableWidget->horizontalHeader(), &QHeaderView::sectionClicked,
             this, &MainWindow::onHeaderClicked);
     connect(ui->btnLoad, &QPushButton::clicked, this, &MainWindow::onLoadClicked);
@@ -83,7 +95,6 @@ MainWindow::MainWindow(QWidget *parent)
     setupCourseFilter();
 }
 
-// Обработка кликов по заголовкам таблицы
 void MainWindow::onHeaderClicked(int logicalIndex) {
     ui->tableWidget->setSortingEnabled(false);
     if (logicalIndex == 0) {
@@ -102,19 +113,24 @@ void MainWindow::onHeaderClicked(int logicalIndex) {
         sortOrderFaculty = (sortOrderFaculty == Qt::AscendingOrder) ? Qt::DescendingOrder : Qt::AscendingOrder;
         ui->tableWidget->sortByColumn(9, sortOrderFaculty);
         updateHeaderArrow(9, sortOrderFaculty);
-    } else {
+    } else if (logicalIndex == 1) { // Курс — сортировка один раз по возрастанию
+        for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
+            auto item = ui->tableWidget->item(row, 1);
+            item->setData(Qt::UserRole, item->text().toInt());
+        }
+        ui->tableWidget->sortByColumn(1, Qt::AscendingOrder);
+    }
+    else {
         ui->tableWidget->setSortingEnabled(false);
     }
 }
 
-// Обновление стрелок сортировки
 void MainWindow::updateHeaderArrow(int column, Qt::SortOrder order) {
     QString arrow = (order == Qt::AscendingOrder) ? "↑" : "↓";
-    QString headerText = ui->tableWidget->horizontalHeaderItem(column)->text().split(" ")[0];
+    QString headerText = ui->tableWidget->horizontalHeaderItem(column)->text().split(" ").first();
     ui->tableWidget->horizontalHeaderItem(column)->setText(headerText + " " + arrow);
 }
 
-// Настройка фильтрации по курсам
 void MainWindow::setupCourseFilter() {
     courseMenu = new QMenu(this);
     for (int i = 1; i <= 6; ++i) {
@@ -131,7 +147,6 @@ void MainWindow::setupCourseFilter() {
             this, &MainWindow::onCourseHeaderClicked);
 }
 
-// Обработка кликов по заголовку "Курс"
 void MainWindow::onCourseHeaderClicked(int logicalIndex) {
     if (logicalIndex == 1) {
         QPoint pos = ui->tableWidget->horizontalHeader()->mapToGlobal(
@@ -140,7 +155,6 @@ void MainWindow::onCourseHeaderClicked(int logicalIndex) {
     }
 }
 
-// Обновление фильтрации по курсам
 void MainWindow::updateCourseFilter() {
     selectedCourses.clear();
     for (QCheckBox *cb : courseCheckboxes) {
@@ -149,7 +163,6 @@ void MainWindow::updateCourseFilter() {
     filterTable();
 }
 
-// Применение фильтрации
 void MainWindow::filterTable() {
     for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
         bool visible = selectedCourses.contains(ui->tableWidget->item(row, 1)->text().toInt());
@@ -157,13 +170,11 @@ void MainWindow::filterTable() {
     }
 }
 
-// Загрузка данных из файла
 void MainWindow::onLoadClicked() {
     QString filename = QFileDialog::getOpenFileName(this, "Выберите файл", "", "Текстовые файлы (*.txt)");
     if (!filename.isEmpty()) loadData(filename);
 }
 
-// Загрузка данных
 void MainWindow::loadData(const QString &filename) {
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -181,7 +192,6 @@ void MainWindow::loadData(const QString &filename) {
     currentFile = filename;
 }
 
-// Добавление студента через диалог
 void MainWindow::onAddClicked() {
     AddStudentDialog dialog(this);
     if (dialog.exec() == QDialog::Accepted) {
@@ -194,14 +204,13 @@ void MainWindow::onAddClicked() {
     }
 }
 
-// Валидация данных
 bool MainWindow::validateData(const QStringList &data) {
     bool ok;
-    data[1].toInt(&ok); // Курс
+    data[1].toInt(&ok);
     if (!ok || data[1].toInt() < 1 || data[1].toInt() > 6) return false;
-    data[5].toInt(&ok); // Стипендия
+    data[5].toInt(&ok);
     if (!ok) return false;
-    return !data[9].isEmpty(); // Факультет не должен быть пустым
+    return !data[9].isEmpty();
 }
 
 // Добавление студента в таблицу
@@ -213,13 +222,15 @@ void MainWindow::addStudent(const QStringList &data) {
         if (i == 0) { // Группа
             item = new GroupTableWidgetItem();
             item->setText(data[i]);
-        } else if (i == 8 || i == 9) { // Задолженность или Факультет
+        } else if (i == 1 || i == 8 || i == 9) { // Курс, Задолженность или Факультет
             item = new QTableWidgetItem(data[i]);
             item->setTextAlignment(Qt::AlignCenter);
         } else {
             item = new QTableWidgetItem(data[i]);
         }
-        if (i == 1 || i == 5 || i == 8 || i == 9) { // Редактируемые столбцы
+
+        // Делаем редактируемыми столбцы: Группа (0), Курс (1), Стипендия (5), Задолженность (8), Факультет (9)
+        if (i == 0 || i == 1 || i == 5 || i == 8 || i == 9) {
             item->setFlags(item->flags() | Qt::ItemIsEditable);
         } else {
             item->setFlags(item->flags() & ~Qt::ItemIsEditable);
@@ -228,24 +239,21 @@ void MainWindow::addStudent(const QStringList &data) {
     }
 }
 
-// Удаление студента
 void MainWindow::onDeleteClicked() {
     int row = ui->tableWidget->currentRow();
     if (row >= 0) ui->tableWidget->removeRow(row);
 }
 
-// Сохранение данных в файл
 void MainWindow::onSaveClicked() {
     QString filename = QFileDialog::getSaveFileName(
         this,
         "Сохранить файл",
         "",
         "Текстовые файлы (*.txt)"
-        );
+    );
     if (!filename.isEmpty()) saveData(filename);
 }
 
-// Сохранение данных
 void MainWindow::saveData(const QString &filename) {
     QFile file(filename);
     if (!file.open(QIODevice::WriteOnly)) {
@@ -263,21 +271,18 @@ void MainWindow::saveData(const QString &filename) {
     file.close();
 }
 
-// Открытие окна запросов
 void MainWindow::onQueriesClicked() {
     QueryResults queryWindow(this);
     queryWindow.setData(ui->tableWidget);
     queryWindow.exec();
 }
 
-// Открытие окна диаграмм
 void MainWindow::onChartsClicked() {
     ChartWindow chartWindow(this);
     chartWindow.setData(ui->tableWidget);
     chartWindow.exec();
 }
 
-// Деструктор
 MainWindow::~MainWindow() {
     delete ui;
 }
