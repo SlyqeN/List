@@ -55,8 +55,6 @@ void AddStudentDialog::onDebtChanged(int index) {
     }
 }
 
-
-
 QStringList AddStudentDialog::getData() const {
     return {
         editGroup->text(),
@@ -105,15 +103,15 @@ void MainWindow::onHeaderClicked(int logicalIndex) {
         sortOrderSurname = (sortOrderSurname == Qt::AscendingOrder) ? Qt::DescendingOrder : Qt::AscendingOrder;
         ui->tableWidget->sortByColumn(2, sortOrderSurname);
         updateHeaderArrow(2, sortOrderSurname);
-    } else if (logicalIndex == 8) { // Сортировка по задолженностям
+    } else if (logicalIndex == 8) {
         sortOrderDebt = (sortOrderDebt == Qt::AscendingOrder) ? Qt::DescendingOrder : Qt::AscendingOrder;
         ui->tableWidget->sortByColumn(8, sortOrderDebt);
         updateHeaderArrow(8, sortOrderDebt);
-    } else if (logicalIndex == 9) { // Сортировка по факультету
+    } else if (logicalIndex == 9) {
         sortOrderFaculty = (sortOrderFaculty == Qt::AscendingOrder) ? Qt::DescendingOrder : Qt::AscendingOrder;
         ui->tableWidget->sortByColumn(9, sortOrderFaculty);
         updateHeaderArrow(9, sortOrderFaculty);
-    } else if (logicalIndex == 1) { // Курс — сортировка один раз по возрастанию
+    } else if (logicalIndex == 1) {
         for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
             auto item = ui->tableWidget->item(row, 1);
             item->setData(Qt::UserRole, item->text().toInt());
@@ -213,23 +211,21 @@ bool MainWindow::validateData(const QStringList &data) {
     return !data[9].isEmpty();
 }
 
-// Добавление студента в таблицу
 void MainWindow::addStudent(const QStringList &data) {
     int row = ui->tableWidget->rowCount();
     ui->tableWidget->insertRow(row);
     for (int i = 0; i < data.size(); ++i) {
         QTableWidgetItem *item;
-        if (i == 0) { // Группа
+        if (i == 0) {
             item = new GroupTableWidgetItem();
             item->setText(data[i]);
-        } else if (i == 1 || i == 8 || i == 9) { // Курс, Задолженность или Факультет
+        } else if (i == 1 || i == 8 || i == 9) {
             item = new QTableWidgetItem(data[i]);
             item->setTextAlignment(Qt::AlignCenter);
         } else {
             item = new QTableWidgetItem(data[i]);
         }
 
-        // Делаем редактируемыми столбцы: Группа (0), Курс (1), Стипендия (5), Задолженность (8), Факультет (9)
         if (i == 0 || i == 1 || i == 5 || i == 8 || i == 9) {
             item->setFlags(item->flags() | Qt::ItemIsEditable);
         } else {

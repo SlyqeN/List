@@ -22,4 +22,4 @@ private:
     QComboBox *querySelector;
 };
 
-#endif // QUERYRESULTS_H
+#endif

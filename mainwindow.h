@@ -15,7 +15,7 @@
 #include <QSet>
 #include <QRegularExpression>
 
-// Класс для сортировки числовых значений (курс, стипендия)
+
 class NumericTableWidgetItem : public QTableWidgetItem {
 public:
     bool operator<(const QTableWidgetItem &other) const override {
@@ -23,7 +23,7 @@ public:
     }
 };
 
-// Класс для сортировки групп (число + текст)
+
 class GroupTableWidgetItem : public QTableWidgetItem {
 public:
     bool operator<(const QTableWidgetItem &other) const override {
@@ -47,27 +47,46 @@ public:
     }
 };
 
+/**
+ * @brief Диалог для добавления нового студента.
+ * Позволяет ввести все необходимые данные о студенте: группу, курс, ФИО, стипендию, старосту, куратора, задолженность и факультет.
+ * При наличии задолженности поле стипендии блокируется и устанавливается в 0.
+ */
 class AddStudentDialog : public QDialog {
     Q_OBJECT
 
 public:
+    /**
+     * @brief Конструктор диалога добавления студента
+     * @param parent Родительский виджет
+     */
     explicit AddStudentDialog(QWidget *parent = nullptr);
+
+    /**
+     * @brief Получить введённые пользователем данные
+     * @return Список строк: группа, курс, фамилия, имя, отчество, стипендия, староста, куратор, задолженность, факультет
+     */
     QStringList getData() const;
 
 private slots:
+    /**
+     * @brief Слот для обработки изменения значения задолженности
+     * Если выбрано "Да", поле стипендии блокируется и устанавливается в 0
+     * @param index Индекс выбранного значения в comboDebt
+     */
     void onDebtChanged(int index);
 
 private:
-    QLineEdit *editGroup;
-    QComboBox *comboCourse;
-    QLineEdit *editSurname;
-    QLineEdit *editName;
-    QLineEdit *editPatronymic;
-    QLineEdit *editScholarship;
-    QLineEdit *editMonitor;
-    QLineEdit *editCurator;
-    QComboBox *comboDebt;
-    QLineEdit *editFaculty;
+    QLineEdit *editGroup;        ///< Поле для ввода группы
+    QComboBox *comboCourse;      ///< Выпадающий список для выбора курса
+    QLineEdit *editSurname;      ///< Поле для ввода фамилии
+    QLineEdit *editName;         ///< Поле для ввода имени
+    QLineEdit *editPatronymic;   ///< Поле для ввода отчества
+    QLineEdit *editScholarship;  ///< Поле для ввода стипендии
+    QLineEdit *editMonitor;      ///< Поле для ввода старосты
+    QLineEdit *editCurator;      ///< Поле для ввода куратора
+    QComboBox *comboDebt;        ///< Выпадающий список для выбора наличия задолженности
+    QLineEdit *editFaculty;      ///< Поле для ввода факультета
 };
 
 class MainWindow : public QMainWindow {
@@ -108,4 +127,4 @@ private:
     void updateHeaderArrow(int column, Qt::SortOrder order);
 };
 
-#endif // MAINWINDOW_H
+#endif

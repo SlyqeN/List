@@ -37,16 +37,10 @@ void QueryResults::setData(QTableWidget *table) {
 void QueryResults::setupTable() {
     resultTable->setColumnCount(4);
     resultTable->setHorizontalHeaderLabels({"ФИО", "Куратор", "Староста", "Факультет"});
-
-    // Растягиваем последнюю колонку
     resultTable->horizontalHeader()->setStretchLastSection(true);
-
-    // Устанавливаем все колонки для растягивания
     for (int i = 0; i < resultTable->columnCount(); ++i) {
         resultTable->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
     }
-
-    // Отключаем горизонтальную прокрутку
     resultTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
@@ -57,7 +51,7 @@ void QueryResults::executeQuery(int index) {
     if (!dataTable) return;
 
     switch (index) {
-    case 0: { // Запрос 1: Список студентов группы ИУК2-21Б
+    case 0: {
         resultTable->setColumnCount(4);
         resultTable->setHorizontalHeaderLabels({"ФИО", "Куратор", "Староста", "Факультет"});
         for (int row = 0; row < dataTable->rowCount(); ++row) {
@@ -74,7 +68,7 @@ void QueryResults::executeQuery(int index) {
         }
         break;
     }
-    case 1: { // Запрос 2: Количество стипендиатов 3 курса факультета ИУК
+    case 1: {
         resultTable->setColumnCount(4);
         resultTable->setHorizontalHeaderLabels({"ФИО", "Куратор", "Староста", "Факультет"});
         int count = 0;
@@ -98,7 +92,7 @@ void QueryResults::executeQuery(int index) {
         resultTable->setItem(totalRow, 1, new QTableWidgetItem(QString::number(count)));
         break;
     }
-    case 2: { // Запрос 3 — Группы с задолженностями (без повторов)
+    case 2: {
         resultTable->setColumnCount(4);
         resultTable->setHorizontalHeaderLabels({"Группа", "Курс", "Куратор", "Факультет"});
 
@@ -120,7 +114,7 @@ void QueryResults::executeQuery(int index) {
         }
         break;
     }
-    case 3: { // Запрос 4: Студенты 2 курса факультета МК по начальной букве фамилии
+    case 3: {
         QString letter = QInputDialog::getText(this, "Ввод", "Введите первую букву фамилии:");
         if (letter.isEmpty()) return;
 
@@ -141,7 +135,7 @@ void QueryResults::executeQuery(int index) {
         }
         break;
     }
-    case 4: { // Запрос 5: Процент студентов 2 и 3 курсов
+    case 4: {
         resultTable->setColumnCount(2);
         resultTable->setHorizontalHeaderLabels({"Курс", "Процент"});
         int totalStudents = 0, course2Count = 0, course3Count = 0;
@@ -164,7 +158,7 @@ void QueryResults::executeQuery(int index) {
         resultTable->setItem(1, 1, new QTableWidgetItem(QString::number(percent3, 'f', 2) + "%"));
         break;
     }
-    case 5: { // Запрос 6
+    case 5: {
         resultTable->setColumnCount(2);
         resultTable->setHorizontalHeaderLabels({"Группа", "Преподаватель"});
         QMap<QString, QString> groupTeachers;
@@ -184,25 +178,19 @@ void QueryResults::executeQuery(int index) {
         }
         break;
     }
-    case 6: { // Запрос 7
+    case 6: {
         resultTable->setColumnCount(2);
-        resultTable->setHorizontalHeaderLabels({"Группа", "Староста"});
-        QMap<QString, QString> monitors;
-
+        resultTable->setHorizontalHeaderLabels({"ФИО", "Группа"});
         for (int row = 0; row < dataTable->rowCount(); ++row) {
-            QString group = dataTable->item(row, 0)->text();
-            QString monitor = dataTable->item(row, 6)->text();
-            monitors[group] = monitor;
+            if (!dataTable->item(row, 6)->text().isEmpty()) {
+                int newRow = resultTable->rowCount();
+                resultTable->insertRow(newRow);
+                resultTable->setItem(newRow, 0, new QTableWidgetItem(dataTable->item(row, 2)->text() + " " +
+                                                                     dataTable->item(row, 3)->text() + " " +
+                                                                     dataTable->item(row, 4)->text()));
+                resultTable->setItem(newRow, 1, new QTableWidgetItem(dataTable->item(row, 0)->text()));
+            }
         }
-
-        int row = 0;
-        for (auto it = monitors.begin(); it != monitors.end(); ++it) {
-            resultTable->insertRow(row);
-            resultTable->setItem(row, 0, new QTableWidgetItem(it.key()));
-            resultTable->setItem(row, 1, new QTableWidgetItem(it.value()));
-            row++;
-        }
-
         break;
     }
     }

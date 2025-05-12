@@ -10,7 +10,6 @@ ChartWindow::ChartWindow(QWidget *parent) : QDialog(parent) {
     setWindowTitle("Диаграммы");
     dataTable = nullptr;
 
-    // Элементы интерфейса
     comboBoxChartType = new QComboBox(this);
     comboBoxChartType->addItem("Круговая по курсам");
     comboBoxChartType->addItem("Круговая по 3 курсу");
@@ -21,19 +20,16 @@ ChartWindow::ChartWindow(QWidget *parent) : QDialog(parent) {
     chartView = new QChartView(this);
     chartView->setRenderHint(QPainter::Antialiasing);
 
-    // Layout верхней панели
     QHBoxLayout *controlsLayout = new QHBoxLayout();
     controlsLayout->addWidget(comboBoxChartType);
     controlsLayout->addWidget(btnShowChart);
 
-    // Основной layout
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addLayout(controlsLayout);
     mainLayout->addWidget(chartView);
 
     setLayout(mainLayout);
 
-    // Обработка кнопки
     connect(btnShowChart, &QPushButton::clicked, this, &ChartWindow::updateChart);
 }
 

@@ -22,7 +22,7 @@ public:
     void setData(QTableWidget *table);
 
 private slots:
-    void updateChart();  // Обработчик кнопки "Показать"
+    void updateChart();
 
 private:
     QTableWidget *dataTable;
@@ -36,4 +36,4 @@ private:
     QChart* createBarChartScholarship();
 };
 
-#endif // CHARTWINDOW_H
+#endif
